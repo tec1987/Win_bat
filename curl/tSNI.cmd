@@ -4,11 +4,11 @@ for /f "tokens=2-3delims=. " %%b in ('curl -V 2^>nul^|find/i "ssl"') do set _cv=
 :next
 if defined _cv (if 1%_cv% lss 1749 echo,CURL version is too old, please update!&pause>nul&goto :EOF) else echo,curl.exe does not exist! please download:&echo,https://curl.haxx.se/download.html#Win32&pause>nul&goto :EOF
 
-set/a _dbg=0,_tw=2,_rt=1
-rem _tw：超时时间(curl -m, --max-time <time>参数值)；_rt：超时后重试次数
+set/a _dbg=0,_tm=3,_tc=2,_rt=1
+rem _tm：完成整个curl操作的超时时间(curl -m, --max-time <time>参数值)；_tc：连接阶段的超时时间；_rt：超时后重试次数
 
 set _pmt=序号,IP,SNI
-set "_c=curl -sm%_tw% --retry %_rt% --connect-to ::!_ipt! --no-keepalive https://"
+set "_c=curl -0 -sm%_tm% --connect-timeout %_tc% --retry %_rt% --connect-to ::!_ipt! --no-keepalive https://"
 set "_q=>nul&&set _r=Y||(if !errorlevel! equ 28 (set _r=Timeout) else set _r=No)"
 if %_dbg% equ 1 (set "_c=%_c:-s=-sS%") else if %_dbg% gtr 1 set "_c=%_c:-s=-v%"
 
@@ -20,7 +20,7 @@ rem    echo 检测到参数，处理输入参数&echo,%cmdcmdline%
     if not defined _psf (
 	for %%d in (baidu bing Google) do %_c%%%d.com/%_q%&echo,!_ipt!	!_r!	%%d
 	%_c%g.co/favicon.ico%_q%
-	echo,!_ipt!	!_r!	g.co&ENDLOCAL&set str=&set _tw=&set _pmt=&set _fdp=&set _dbg=&set _c=&set _q=&goto :eof
+	echo,!_ipt!	!_r!	g.co&ENDLOCAL&goto :eof
     )
     set "str=!str:%~f0 =!"
     set "str=!str: %~d1=" "%~d1!"
@@ -86,7 +86,6 @@ rem    echo 检测到参数，处理输入参数&echo,%cmdcmdline%
 	)
     ) else cls&echo 输入无效，请重试。。。&echo,&goto :_rip
 )
-set _tw=&set _pmt=&set str=&set _pef=&set _id=&set _fdp=&set _otn=&set _ipt=&set _otf=&set _psf=
 
 echo,&echo 完成，按任意键退出。&pause>nul
 goto :eof
