@@ -1,14 +1,13 @@
 @echo off&cd /d "%~dp0"&SETLOCAL&set "_fdp=%~dp0"
-rem 当拖放文件到批处理时，默认目录并非当前批处理所在目录：%~dp0，而是用户的主目录：%USERPROFILE%
 for /f "tokens=2-3delims=. " %%b in ('curl -V 2^>nul^|find/i "ssl"') do set _cv=%%b%%c&goto :next
 :next
-if defined _cv (if 1%_cv% lss 1749 echo,CURL version is too old, please update!&pause>nul&goto :EOF) else echo,curl.exe does not exist! please download:&echo,https://curl.haxx.se/download.html#Win32&pause>nul&goto :EOF
+if defined _cv (if 1%_cv% lss 1749 echo,CURL version is too old, please update!&pause>nul&goto :EOF) else echo,curl.exe does not exist or not support SSL! please download:&echo,https://curl.haxx.se/download.html#Win32&pause>nul&goto :EOF
 
-set/a _dbg=0,_tm=3,_tc=2,_rt=1
+set/a _dbg=0,_tm=3,_tc=3,_rt=1
 rem _tm：完成整个curl操作的超时时间(curl -m, --max-time <time>参数值)；_tc：连接阶段的超时时间；_rt：超时后重试次数
 
 set _pmt=序号,IP,SNI
-set "_c=curl -0 -sm%_tm% --connect-timeout %_tc% --retry %_rt% --connect-to ::!_ipt! --no-keepalive https://"
+set "_c=curl -q -0sm%_tm% --connect-timeout %_tc% --retry %_rt% --connect-to ::!_ipt! https://"
 set "_q=>nul&&set _r=Y||(if !errorlevel! equ 28 (set _r=Timeout) else set _r=No)"
 if %_dbg% equ 1 (set "_c=%_c:-s=-sS%") else if %_dbg% gtr 1 set "_c=%_c:-s=-v%"
 
@@ -90,38 +89,31 @@ rem    echo 检测到参数，处理输入参数&echo,%cmdcmdline%
 echo,&echo 完成，按任意键退出。&pause>nul
 goto :eof
 
-:_fle	rem 输入内容有效性验证
-    SETLOCAL ENABLEDELAYEDEXPANSION&rem echo 输入：!_ipt!
-    set _isf=&set _psf=
+:_fle	rem 输入IP有效性验证
+    SETLOCAL ENABLEDELAYEDEXPANSION&set _psf=&rem echo 输入：!_ipt!
     if defined _ipt (rem 判断是否含有引号以及无效字符
 	set "_in1=!_ipt:"=#!"
 	set "_in2=!_ipt:"=@!"
 	if "!_in1!" neq "!_in2!" ENDLOCAL&set _psf=1&goto :eof	rem !_ipt!包含引号，不能继续判断
-	for /f "tokens=*delims=0123456789.abcdefghijklmnopqrstuvwxyz-ABCDEFGHIJKLMNOPQRSTUVWXYZ eol=" %%a in ("!_ipt!")do if "%%a" neq "" set _psf=1
-    ) else set _psf=1&rem echo in :_fle 输入无效。
-
-    if defined _psf (ENDLOCAL&set _psf=1&goto :eof)else (
+	for /f "tokens=*delims=0123456789. eol=" %%a in ("!_ipt!")do if "%%a" neq "" set _psf=1
 	set _in1=!_ipt:..=!
 	if "!_in1!" neq "!_ipt!" set _psf=1&rem echo 有多余的连续句点
 	set _b=!_ipt:~0,1!&set _e=!_ipt:~-1!
 	if "!_b!"=="." set _psf=1&rem echo 首有多余句点。。。
-rem	if "!_e!"=="." set _psf=1&rem echo 尾有多余句点。。。
+	if "!_e!"=="." set _psf=1&rem echo 尾有多余句点。。。
 	set _in2=!_ipt:.=;!
 	if "!_in2!"=="!_ipt!" set _psf=1&rem echo 不包含句点。。。
 
 	set/a_ii=_it=0
 	for %%c in (!_in2!) do (
 	    set/a_ii+=1&set _!_ii!=%%c
-	    if %%c leq 255 if %%c geq 0 set/a_it+=1
-	    call set _bb=%%_!_ii!:~0,1%%&call set _ee=%%_!_ii!:~-1%%
-	    if !_bb!==- set _psf=1&rem echo 有多余的横线-。
-	    if !_ee!==- set _psf=1&rem echo 有多余的横线-。
+	    if %%c leq 255 if %%c geq 0 set/a _it+=1
 	)
-	for /f "tokens=*delims=0123456789. eol=" %%a in ("!_ipt!") do if "%%a"=="" if !_e! neq . if !_it! equ 4 if !_ii! equ 4 set _isf=1
-	if not defined _isf set _psf=1&rem echo 不是有效的IP
-    )
-    if defined _psf ENDLOCAL&set _psf=1
-goto :eof
+	if !_it! neq 4 set _psf=1
+	if !_ii! neq 4 set _psf=1
+	if defined _psf ENDLOCAL&set _psf=1&goto :eof
+    ) else ENDLOCAL&set _psf=1&goto :eof&rem echo in :_fle 输入无效。
+ENDLOCAL&goto :eof
 
 :_tSNI
     if #%1==# if %_id%==1 (
@@ -131,11 +123,5 @@ goto :eof
 goto :eof
 
 
-rem curl -sm2 --resolve g.co:443:%1 https://g.co/favicon.ico
-
-curl -m2 --resolve www.google.com:443:203.210.8.42 https://www.google.com
-curl -sm2 --resolve g.co:443:203.210.8.19 https://g.co/favicon.ico>nul&&set _r=1||set _r=0
-curl -sm2 --resolve a.akamaihd.net:443:203.210.8.19 https://a.akamaihd.net>nul&&echo OK||echo No
-
-curl -sm2 --connect-to ::203.210.8.37 https://www.google.com/ncr
-curl -km2 --connect-to ::203.210.8.37 https://www.google.com/ncr
+curl -km2 --resolve g.co:443:203.210.8.37 https://g.co/favicon.ico
+curl -sm2 --connect-to ::203.210.8.19 https://a.akamaihd.net>nul&&echo OK||echo No
