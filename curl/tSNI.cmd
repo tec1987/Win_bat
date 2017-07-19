@@ -17,7 +17,7 @@ rem    echo 检测到参数，处理输入参数&echo,%cmdcmdline%
     SETLOCAL ENABLEDELAYEDEXPANSION&set _slf=1
     set "_ipt=%~1"&call :_fle
     if not defined _psf (
-	for %%d in (baidu bing Google) do %_c%%%d.com/%_q%&echo,!_ipt!	!_r!	%%d
+	for %%d in (baidu bing) do %_c%%%d.com/%_q%&echo,!_ipt!	!_r!	%%d
 	%_c%g.co/favicon.ico%_q%
 	echo,!_ipt!	!_r!	g.co&ENDLOCAL&goto :eof
     )
@@ -90,7 +90,7 @@ echo,&echo 完成，按任意键退出。&pause>nul
 goto :eof
 
 :_fle	rem 输入IP有效性验证
-    SETLOCAL ENABLEDELAYEDEXPANSION&set _psf=&rem echo 输入：!_ipt!
+    set _psf=&SETLOCAL ENABLEDELAYEDEXPANSION&rem echo 输入：!_ipt! 先将_psf清空，避免出现无效字符后_psf始终为1，也可在主循环中处理
     if defined _ipt (rem 判断是否含有引号以及无效字符
 	set "_in1=!_ipt:"=#!"
 	set "_in2=!_ipt:"=@!"
