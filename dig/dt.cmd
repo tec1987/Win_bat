@@ -10,7 +10,6 @@ set _to=2
 set _rt=0
 
 set "_fl=for /f "eol=;tokens=*delims=" %%a in ('dig"
-set "_fr=@%_ip% -p%%p +noall +answer +time^=%_to% +retry^=%_rt% %_qn%') do echo,%%a&&if not defined _ut set _ut=1"
 
 :bg
 set /p _inp="Please input IP address or Domain name: "
@@ -18,6 +17,7 @@ if "%_inp%"=="cc" (cls&goto :bg) else if "%_inp%"=="q" ENDLOCAL&goto :eof
 
 call :_fle&rem	echo,_isf==%_isf%
 if defined _isf (if "%_isf%"=="0" (set _ip=%_inp%&set _qn=%_dqn%) else set _qn=%_inp%&set _ip=%_dip%) else goto :bg
+set "_fr=@%_ip% -p%%p +noall +answer +time^=%_to% +retry^=%_rt% %_qn%') do echo,%%a&&if not defined _ut set _ut=1"
 
 call :_dd UDP
 call :_dd TCP
