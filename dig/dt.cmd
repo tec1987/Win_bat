@@ -1,4 +1,4 @@
-@echo off&cd /d "%~dp0"&SETLOCAL&set "_fdp=%~dp0"
+@echo off&cd /d "%~dp0"&SETLOCAL&set "_fn=%~nx0"
 rem 输入IP时：测试此IP是否支持TCP及非标准端口的DNS查询；输入域名时：使用TCP+UDP多端口来查询，以此判断该域名是否被污染
 rem 在cmd命令行下使用，暂不支持命令行参数
 rem 测试域名 t.cn	g.cn（无污染）zh.wikipedia.org googlevideo.com www.google.com www.google.com.hk www.tumblr.com 有污染
@@ -83,11 +83,45 @@ rem	if "!_e!"=="." set _psf=1&rem echo 尾有多余句点。。。暂不处理，可能是域名
 	for /f "tokens=*delims=0123456789. eol=" %%a in ("!_inp!") do if "%%a"=="" (if !_e! neq . if !_it! equ 4 if !_ii! equ 4 set _isf=0) else (
 	rem echo 不是IP，判断是否为域名
 	    for %%c in (!_ii!) do set _tld=!_%%c!
-	    for /f "tokens=*delims=abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ" %%a in ("!_tld!") do if "%%a"=="" (
-		for %%z in (com net org info biz name pro edu gov int club asia) do if !_tld!==%%z set _isf=1&rem echo 是常见的通用域名后缀
-		if !_tld!==!_tld:~-2! if !_tld! neq !_tld:~-1! set _isf=1&rem echo 后缀是两个字母，可以认为是域名
-	    )
+	    for /f "tokens=*delims=abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ" %%a in ("!_tld!") do if "%%a"=="" set _isf=1&rem echo 后缀是字母，可以认为是域名。
+	    rem IANA TLD列表：https://data.iana.org/TLD/tlds-alpha-by-domain.txt
+	    rem for /f "delims=:" %%n in ('findstr /binc:"# https://data.iana.org/" %_fn%') do set _skp=%%n&&echo,"_skp==!_skp!"
+	    rem for /f "eol=# skip=95" %%x in (%_fn%) do echo,%%x&if "!_tld!"=="%%x" echo,OK	_tld=!_tld!
 	)
 	if defined _isf (for %%a in (!_isf!) do ENDLOCAL&set _isf=%%a)&goto :eof	rem 是有效的IP或域名
     )
 ENDLOCAL&goto :eof
+
+# https://data.iana.org/TLD/tlds-alpha-by-domain.txt
+# Version 2017111900, Last Updated Sun Nov 19 07:07:01 2017 UTC
+AAA
+AARP
+ABARTH
+ABB
+ABBOTT
+ABBVIE
+ABC
+ABLE
+ABOGADO
+ABUDHABI
+AC
+ACADEMY
+ACCENTURE
+ACCOUNTANT
+ACCOUNTANTS
+ACO
+ACTIVE
+ACTOR
+AD
+ADAC
+ADS
+ADULT
+AE
+AEG
+AERO
+AETNA
+AF
+AFAMILYCOMPANY
+AFL
+AFRICA
+......
