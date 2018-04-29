@@ -18,8 +18,8 @@ rem    echo 检测到参数，处理输入参数&echo,%cmdcmdline%
     set "_ipt=%~1"&call :_fle
     if not defined _psf (
 	for %%d in (baidu bing yahoo Amazon eBay Tmall Taobao jd Weibo Linkedin) do %_c%%%d.com/%_q%&echo,!_ipt!	!_r!	%%d
-	%_c%yandex.com/favicon.ico%_q%
-	echo,!_ipt!	!_r!	Yandex&ENDLOCAL&goto :eof
+	for %%d in (s x y) do %_c%%%d.co/favicon.ico%_q%&echo,!_ipt!	!_r!	%%d.co
+	ENDLOCAL&goto :eof
     )
     set "str=!str:%~f0 =!"
     set "str=!str: %~d1=" "%~d1!"

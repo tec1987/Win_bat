@@ -3,7 +3,7 @@ for /f "tokens=2-3delims=. " %%b in ('curl -V 2^>nul^|find/i "ssl"') do set _cv=
 :next
 if defined _cv (if 1%_cv% lss 1749 echo,CURL version is too old, please update!&pause>nul&goto :EOF) else echo,curl.exe does not exist or not support SSL! please download:&echo,https://curl.haxx.se/download.html#Win32&pause>nul&goto :EOF
 
-set/a _dbg=0,_tm=3,_tc=3,_rt=1
+set/a _dbg=0,_tm=4,_tc=3,_rt=0
 rem _tm：完成整个curl操作的超时时间(curl -m, --max-time <time>参数值)；_tc：连接阶段的超时时间；_rt：超时后重试次数
 
 set _pmt=序号,IP,SNI
@@ -17,9 +17,9 @@ rem    echo 检测到参数，处理输入参数&echo,%cmdcmdline%
     SETLOCAL ENABLEDELAYEDEXPANSION&set _slf=1
     set "_ipt=%~1"&call :_fle
     if not defined _psf (
-	for %%d in (baidu bing) do %_c%%%d.com/%_q%&echo,!_ipt!	!_r!	%%d
-	%_c%g.co/favicon.ico%_q%
-	echo,!_ipt!	!_r!	g.co&ENDLOCAL&goto :eof
+	for %%d in (baidu bing amazon) do %_c%%%d.com/%_q%&echo,!_ipt!	!_r!	%%d
+	for %%d in (s x y) do %_c%%%d.co/favicon.ico%_q%&echo,!_ipt!	!_r!	%%d.co
+	ENDLOCAL&goto :eof
     )
     set "str=!str:%~f0 =!"
     set "str=!str: %~d1=" "%~d1!"
@@ -119,7 +119,7 @@ ENDLOCAL&goto :eof
     if #%1==# if %_id%==1 (
 	set _d=!date:~0,10!_!time:~0,-3!&set _d=!_d: =0!&set _d=!_d:/=!&set _d=!_d:-=!&set _d=!_d:.=!
 	set "_otf=SNI-Test_!_d::=!.csv"&echo,%_pmt%>"%_otn%_!_otf!")
-    %_c%google.com/%_q%
+    %_c%ipinfo.io/ip%_q%
 goto :eof
 
 
